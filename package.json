@@ -3,12 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.18",
+    "@fortawesome/free-brands-svg-icons": "^5.8.2",
+    "@fortawesome/free-solid-svg-icons": "^5.8.2",
+    "@improbable-eng/grpc-web": "^0.9.5",
+    "@material-ui/core": "^3.9.3",
+    "@material-ui/icons": "^3.0.2",
+    "@types/google-protobuf": "^3.2.7",
     "@types/jest": "24.0.12",
     "@types/node": "12.0.0",
-    "@types/react": "16.8.17",
     "@types/react-dom": "16.8.4",
+    "bitcoinjs-lib": "^5.0.3",
+    "google-protobuf": "^3.8.0-rc.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.0",
     "react-scripts": "3.0.1",
     "typescript": "3.4.5"
   },
@@ -32,5 +41,17 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/material-ui": "^0.21.6",
+    "@types/react": "^16.8.17",
+    "@types/react-router-dom": "^4.3.3",
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
+    "@typescript-eslint/parser": "^1.9.0",
+    "bignumber.js": "^8.1.1",
+    "eslint": "^5.16.0",
+    "ethjs": "^0.4.0",
+    "singularitynet-platform-contracts": "^0.3.0",
+    "singularitynet-token-contracts": "^2.0.1"
   }
 }

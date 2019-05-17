@@ -1,0 +1,2 @@
+#Ignore App.tsx linsting to avoid web3 err
+/root/src/route/App.tsx

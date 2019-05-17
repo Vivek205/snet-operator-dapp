@@ -21,5 +21,9 @@
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "src/protos/config/config_pb.js",
+    "src/protos/config/config_pb_service.js"
   ]
 }
