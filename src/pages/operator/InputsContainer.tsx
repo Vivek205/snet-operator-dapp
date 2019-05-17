@@ -12,7 +12,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';
-import { withStyles } from '@material-ui/core';
+import { withStyles, createStyles, Theme } from '@material-ui/core';
 
 
 interface IProps {
@@ -26,14 +26,26 @@ interface IState {
     strings: stringObject;
 }
 
-const styles = {
+const styles = () => createStyles({
+    card: {
+        minWidth: 275,
+        // width: '40%'
+    },
+    cardHeader: {
+        textAlign: "left"
+    },
+    cardActions: {
+        float: "right",
+        paddingRight: 32,
+        paddingBottom: 10
+    },
     cardHeaderTitle: {
         fontSize: '2.5rem'
     },
     cardContentRoot: {
         paddingTop: 0
     }
-}
+});
 
 class InputsContainer extends Component<IProps, IState> {
     state = {
@@ -88,7 +100,8 @@ class InputsContainer extends Component<IProps, IState> {
                         <List>
                             {configs[activeSection] && configs[activeSection].map((config: anyObject, index: number) => {
                                 console.log('types', config.type, typeof config.type);
-                                // if (config.type == '0') {
+                                // ConfigType - Number
+                                // if (config.type == '1') { 
                                 if (index % 3 === 0) {
                                     return (
                                         <ListItem >
@@ -101,6 +114,8 @@ class InputsContainer extends Component<IProps, IState> {
                                         </ListItem>
                                     )
                                 }
+                                // ConfigType - Boolean
+                                // if (config.type == '4') {
                                 if (index % 2 === 0) {
                                     return (
                                         <ListItem >
@@ -113,6 +128,8 @@ class InputsContainer extends Component<IProps, IState> {
                                         </ListItem>
                                     );
                                 }
+                                // ConfigType - String or URL
+                                // if (config.type == '0' || config.type == '3') {
                                 return (
                                     <ListItem >
                                         <StringInput

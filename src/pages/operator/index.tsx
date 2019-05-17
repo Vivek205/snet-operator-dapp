@@ -59,18 +59,6 @@ const styles = (theme: Theme) => createStyles({
     header: {
         margin: '0 auto'
     },
-    card: {
-        minWidth: 275,
-        // width: '40%'
-    },
-    cardHeader: {
-        textAlign: "left"
-    },
-    cardActions: {
-        float: "right",
-        paddingRight: 32,
-        paddingBottom: 10
-    },
     button: {
         fontSize: '1.4rem'
     }
