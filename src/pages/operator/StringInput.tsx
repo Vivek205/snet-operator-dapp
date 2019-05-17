@@ -20,6 +20,9 @@ const styles = {
     icon: {
         verticalAlign: 'middle',
         marginLeft: 5
+    },
+    tooltip: {
+        fontSize: '1.5rem',
     }
 }
 

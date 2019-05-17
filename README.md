@@ -45,4 +45,15 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 
 
 ## Steps to generate STUB
+**pre-requisites**
+* protobuff compiler - install globally on the machine (linux/windows/mac) 
+* ts-protoc-gen - npm i ts-protoc-gen -g 
+
 protoc -I=. src/protos/config/config.proto  --ts_out=service=true:. --js_out=import_style=commonjs,binary:.
+
+## After STUB generation
+After the STUB is generated, add the following line on the top of the generatated files.
+
+/* eslint-disable */
+
+The above line will ignore the eslint errors.

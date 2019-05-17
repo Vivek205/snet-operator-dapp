@@ -13,12 +13,16 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';
 import { withStyles, createStyles, Theme } from '@material-ui/core';
-
+import AppBar from '@material-ui/core/AppBar';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
 
 interface IProps {
     classes: any;
     activeSection: string;
     configs: configs;
+    handleSubmit(editedConfigs: stringObject): void;
 }
 
 interface IState {
@@ -44,6 +48,21 @@ const styles = () => createStyles({
     },
     cardContentRoot: {
         paddingTop: 0
+    },
+    footer: {
+        top: 'auto',
+        bottom: 0
+    },
+    toolbar: {
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    actionButtons: {
+        margin: '0 auto',
+    },
+    button: {
+        fontSize: '1.4rem',
+        margin: 'auto 15px'
     }
 });
 
@@ -66,9 +85,16 @@ class InputsContainer extends Component<IProps, IState> {
         this.setState({ strings });
     }
 
+    handleCancel = () => {
+        let booleans: boolObject = {};
+        let strings: stringObject = {};
+        this.setState({ booleans, strings })
+    }
+
     handleSubmit = () => {
-        let submitObj: any = { ...this.state.booleans, ...this.state.strings }
-        console.log('submit', submitObj);
+        let submitObj: stringObject = { ...this.state.booleans, ...this.state.strings }
+        // console.log('submit', submitObj);
+        this.props.handleSubmit(submitObj);
     }
 
     shouldActionsDisabled = (): boolean => {
@@ -80,6 +106,7 @@ class InputsContainer extends Component<IProps, IState> {
         }
         return false;
     }
+
 
     render() {
         const { classes, activeSection, configs } = this.props;
@@ -143,14 +170,26 @@ class InputsContainer extends Component<IProps, IState> {
                         </List>
                     </CardContent>
                     <CardActions className={classes.cardActions}>
-                        <Button variant="contained" color="secondary" className={classes.button} disabled={this.shouldActionsDisabled()}>
-                            Cancel
-                        </Button>
-                        <Button variant="contained" color="primary" className={classes.button} onClick={this.handleSubmit} disabled={this.shouldActionsDisabled()}>
-                            Submit
-                        </Button>
+
                     </CardActions>
                 </Card>
+                <CssBaseline />
+                <AppBar position="fixed" className={classes.footer} color='secondary'>
+                    <Toolbar className={classes.toolbar}>
+                        <Typography variant="h4" color="inherit" className={classes.actionButtons}>
+                            <Button variant="contained" color="secondary" className={classes.button}
+                                onClick={this.handleCancel}
+                                disabled={this.shouldActionsDisabled()}>
+                                Cancel
+                        </Button>
+                            <Button variant="contained" color="primary" className={classes.button}
+                                onClick={this.handleSubmit}
+                                disabled={this.shouldActionsDisabled()}>
+                                Submit
+                        </Button>
+                        </Typography>
+                    </Toolbar>
+                </AppBar>
             </>
         );
     }

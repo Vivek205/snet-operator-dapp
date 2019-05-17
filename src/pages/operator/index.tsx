@@ -2,10 +2,11 @@ import React, { Component } from 'react';
 import SectionMenu from './SectionMenu';
 
 import Header from '../../reusableComponents/Header';
-import InputsContaine from './InputsContainer';
+import InputsContainer from './InputsContainer';
 import ChannelHelper from '../../utilities/ChannelHelper';
 import { grpc } from "@improbable-eng/grpc-web";
 import { Code } from '../../typeScript/grpc';
+import { anyObject, configs, stringObject } from '../../typeScript/interfaces';
 
 // Generated STUB Imports
 import { ConfigurationService } from '../../protos/config/config_pb_service';
@@ -17,7 +18,6 @@ import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { anyObject, configs } from '../../typeScript/interfaces';
 
 interface IProps {
     classes: anyObject;
@@ -58,9 +58,6 @@ const styles = (theme: Theme) => createStyles({
     toolbar: theme.mixins.toolbar,
     header: {
         margin: '0 auto'
-    },
-    button: {
-        fontSize: '1.4rem'
     }
 });
 
@@ -124,6 +121,41 @@ class Operator extends Component<IProps, IState> {
         }
     }
 
+    //Have to be typed properly
+    updateConfigDetails = (submitArr: any[]) => {
+        const updateRequest: any = submitArr;
+        let count: number = 0;
+        try {
+            grpc.invoke(ConfigurationService.UpdateConfiguration, {
+                request: updateRequest,
+                host: 'http://34.197.167.102:8088',
+                onMessage: (message: ConfigurationResponse) => {
+                    console.log('length of response', message);
+
+
+                },
+                onEnd: (code: Code, msg: string | undefined, trailers: grpc.Metadata) => {
+                    console.log('end', '--code', code, '--msg', msg, '--trailers', trailers);
+                }
+            })
+        } catch (err) {
+            console.log('Err: UpdateConfigDetails', err);
+        }
+    }
+
+    handleSubmit = (editedConfigs: stringObject): void => {
+        let submitArr: any[] = [];
+        Object.entries(editedConfigs).forEach(([key, value]) => {
+            let nameValue = {
+                name: key,
+                value
+            }
+            submitArr.push(nameValue);
+        })
+        console.log('editedConfigs', submitArr);
+        this.updateConfigDetails(submitArr);
+    }
+
     render() {
         const { classes } = this.props;
         const { activeSection, configs } = this.state;
@@ -145,9 +177,10 @@ class Operator extends Component<IProps, IState> {
                     <main className={classes.content}>
                         <div className={classes.toolbar} />
                         <Typography paragraph variant='display1'>
-                            <InputsContaine classes={classes} activeSection={activeSection} configs={configs} />
+                            <InputsContainer classes={classes} activeSection={activeSection} configs={configs} handleSubmit={this.handleSubmit} />
                         </Typography>
                     </main>
+
                 </div>
             </div>
         );
