@@ -6,4 +6,10 @@ module.exports = {
     ],
     plugins: ['@typescript-eslint', 'react'],
     rules: {},
+    // "eslint.validate": [
+    //     "javascript",
+    //     "javascriptreact",
+    //     { "language": "typescript", "autoFix": true },
+    //     { "language": "typescriptreact", "autoFix": true }
+    // ]
 };

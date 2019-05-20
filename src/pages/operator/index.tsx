@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import SectionMenu from './SectionMenu';
 
@@ -7,6 +8,7 @@ import ChannelHelper from '../../utilities/ChannelHelper';
 import { grpc } from "@improbable-eng/grpc-web";
 import { Code } from '../../typeScript/grpc';
 import { anyObject, configs, stringObject } from '../../typeScript/interfaces';
+import Loader from '../../reusableComponents/Loader';
 
 // Generated STUB Imports
 import { ConfigurationService } from '../../protos/config/config_pb_service';
@@ -21,12 +23,14 @@ import Typography from '@material-ui/core/Typography';
 
 interface IProps {
     classes: anyObject;
+    network: any;
 }
 
 interface IState {
     configs: configs;
     sections: string[];
     activeSection: string;
+    showLoader: boolean;
 }
 
 export interface Menu {
@@ -67,7 +71,8 @@ class Operator extends Component<IProps, IState> {
     state = {
         activeSection: 'general',
         configs: {},
-        sections: []
+        sections: [],
+        showLoader: true
     }
 
     componentDidMount = () => {
@@ -75,50 +80,93 @@ class Operator extends Component<IProps, IState> {
     }
 
     handleSectionChange = (activeSection: string) => {
-        console.log('active Section', activeSection);
         this.setState({ activeSection });
     }
 
-    fetchConfigDetails = (signature = '') => {
+    composeSHA3Message = (types: any[], values: any[]) => {
+        var ethereumjsabi = require('ethereumjs-abi');
+        var sha3Message = ethereumjsabi.soliditySHA3(types, values);
+        var msg = "0x" + sha3Message.toString("hex");
+        return msg;
+    }
+
+    getAccount = (): Promise<string> => {
+        return new Promise((resolve: any) => {
+            this.props.network.getAccount((address: string) => {
+                console.log('resolved', typeof address);
+                resolve(address);
+            });
+        })
+    }
+
+    getCurrentBlockNumber = (): Promise<number> => {
+        return new Promise((resolve: any) => {
+            this.props.network.getCurrentBlockNumber((blockNumber: number) => {
+                resolve(blockNumber);
+            })
+        })
+    }
+
+    fetchConfigDetails = async (signature = '') => {
         let sections: string[] = [];
         let configs: any = {};
         const readRequest: ReadRequest = new ReadRequest();
         let count: number = 0;
-        try {
-            grpc.invoke(ConfigurationService.GetConfiguration, {
-                request: readRequest,
-                host: 'http://34.197.167.102:8088',
-                onMessage: (message: ConfigurationResponse) => {
-                    console.log('length of response', message.getConfigurationList().length);
-                    message.getConfigurationList().map((value: ConfigurationParameter, index: number) => {
-                        console.log('sections', value.getSection());
-                        let config: any = {
-                            name: value.getName(),
-                            value: value.getValue(),
-                            type: value.getType(),
-                            editable: value.getEditable(),
-                            description: value.getDescription(),
-                            restartDaemon: value.getRestartDaemon(),
-                            section: value.getSection()
-                        }
-                        if (!sections.includes(value.getSection())) { // If new section comes in the loop
-                            sections.push(value.getSection());
-                            configs[config.section] = [];
-                        }
-                        configs[config.section].push(config);
-                        if (config.section === 'general') { count++; }
-                    });
-                    console.log('config Response', ConfigurationResponse);
-                    this.setState({ configs, sections, activeSection: sections[0] });
+        let userAddress: string = '';
+        let currentBlockNumber: number = 0;
+        console.log('calling');
+        userAddress = await this.getAccount();
+        console.log('userAddress', userAddress);
+        currentBlockNumber = await this.getCurrentBlockNumber();
+        console.log('blockNumber', currentBlockNumber);
 
-                },
-                onEnd: (code: Code, msg: string | undefined, trailers: grpc.Metadata) => {
-                    console.log('end', '--code', code, '--msg', msg, '--trailers', trailers);
+        let msg = this.composeSHA3Message(
+            ['string', 'uint256', 'address'],
+            ['_Request_Read', currentBlockNumber, userAddress]);
+        console.log('msg', msg);
+        console.log('eth', this.props.network.eth.personal_sign);
+        this.props.network.eth.personal_sign(msg, userAddress)
+            .then((signed: string) => {
+                console.log('metamask signature', signed);
+                try {
+                    grpc.invoke(ConfigurationService.GetConfiguration, {
+                        request: readRequest,
+                        host: 'http://34.197.167.102:8088',
+                        onMessage: (message: ConfigurationResponse) => {
+                            message.getConfigurationList().map((value: ConfigurationParameter, index: number) => {
+                                let config: any = {
+                                    name: value.getName(),
+                                    value: value.getValue(),
+                                    type: value.getType(),
+                                    editable: value.getEditable(),
+                                    description: value.getDescription(),
+                                    restartDaemon: value.getRestartDaemon(),
+                                    section: value.getSection()
+                                }
+                                if (!sections.includes(value.getSection())) { // If new section comes in the loop
+                                    sections.push(value.getSection());
+                                    configs[config.section] = [];
+                                }
+                                configs[config.section].push(config);
+                                if (config.section === 'general') { count++; }
+                            });
+                            this.setState({ configs, sections, activeSection: sections[0] });
+
+                        },
+                        onEnd: (code: Code, msg: string | undefined, trailers: grpc.Metadata) => {
+                            console.log('end', '--code', code, '--msg', msg, '--trailers', trailers);
+                            this.setState({ showLoader: false });
+                        }
+                    })
+                } catch (err) {
+                    console.log('Err: fetchConfigDetails', err);
+                    this.setState({ showLoader: false });
                 }
             })
-        } catch (err) {
-            console.log('Err: fetchConfigDetails', err);
-        }
+            .catch((err: string) => {
+                console.log(err);
+                this.setState({ showLoader: false });
+            })
     }
 
     //Have to be typed properly
@@ -152,7 +200,7 @@ class Operator extends Component<IProps, IState> {
             }
             submitArr.push(nameValue);
         })
-        console.log('editedConfigs', submitArr);
+        console.log('editedConfigs submitArr', submitArr);
         this.updateConfigDetails(submitArr);
     }
 
@@ -164,24 +212,28 @@ class Operator extends Component<IProps, IState> {
                 {/* <div  style={{position:"fixed",width:'100vh'}} className={classes.appBar}>
                 <Header  />
                 </div> */}
-                <div className={classes.root}>
-                    <CssBaseline />
-                    <AppBar position="fixed" className={classes.appBar}>
-                        <Toolbar>
-                            <Typography variant="h4" color="inherit" className={classes.header}>
-                                SingularityNet Operator UI
+                {this.state.showLoader ?
+                    <Loader show />
+                    :
+                    <div className={classes.root}>
+                        <CssBaseline />
+                        <AppBar position="fixed" className={classes.appBar}>
+                            <Toolbar>
+                                <Typography variant="h4" color="inherit" className={classes.header}>
+                                    SingularityNet Operator UI
                             </Typography>
-                        </Toolbar>
-                    </AppBar>
-                    <SectionMenu classes={classes} sections={this.state.sections} handleSectionChange={this.handleSectionChange} />
-                    <main className={classes.content}>
-                        <div className={classes.toolbar} />
-                        <Typography paragraph variant='display1'>
-                            <InputsContainer classes={classes} activeSection={activeSection} configs={configs} handleSubmit={this.handleSubmit} />
-                        </Typography>
-                    </main>
+                            </Toolbar>
+                        </AppBar>
+                        <SectionMenu classes={classes} sections={this.state.sections} handleSectionChange={this.handleSectionChange} />
+                        <main className={classes.content}>
+                            <div className={classes.toolbar} />
+                            <Typography paragraph variant='display1'>
+                                <InputsContainer classes={classes} activeSection={activeSection} configs={configs} handleSubmit={this.handleSubmit} />
+                            </Typography>
+                        </main>
 
-                </div>
+                    </div>}
+
             </div>
         );
     }

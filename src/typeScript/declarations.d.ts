@@ -1,5 +1,6 @@
 interface Window{
     web3:any;
+    ethjs:any;
 }
 
 declare namespace JSX {

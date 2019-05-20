@@ -76,14 +76,14 @@ export const DEFAULT_GAS_ESTIMATE = 210000;
 export class ErrorUtils {
 
     static sanitizeError(error) {
-        if (typeof error === 'string' && error.indexOf("provider access") != -1) {
+        if (typeof error === 'string' && error.indexOf("provider access") !== -1) {
             return ERROR_MESSAGE.denied;
         }
 
         if (typeof error === 'object') {
             if (error.hasOwnProperty("value")) {
                 // It checks for rejection on both cases of message or transaction
-                if (error.value.message.indexOf("User denied") != -1) {
+                if (error.value.message.indexOf("User denied") !== -1) {
                     return ERROR_MESSAGE.reject;
                 }
 

@@ -75,7 +75,6 @@ class InputsContainer extends Component<IProps, IState> {
     handleBoolanChange = (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
         let booleans: boolObject = { ...this.state.booleans };
         booleans[name] = event.currentTarget.checked;
-        console.log('handleBooleanChange', name, booleans[name])
         this.setState({ booleans });
     }
 
@@ -93,13 +92,10 @@ class InputsContainer extends Component<IProps, IState> {
 
     handleSubmit = () => {
         let submitObj: stringObject = { ...this.state.booleans, ...this.state.strings }
-        // console.log('submit', submitObj);
         this.props.handleSubmit(submitObj);
     }
 
     shouldActionsDisabled = (): boolean => {
-        console.log('booleans', this.state.booleans);
-        console.log('strings', this.state.strings);
         if (isEmptyObject(this.state.booleans) && isEmptyObject(this.state.strings)) {
             // return true;  revert back
             return false;
@@ -112,7 +108,6 @@ class InputsContainer extends Component<IProps, IState> {
         const { classes, activeSection, configs } = this.props;
         const booleans: boolObject = { ...this.state.booleans };
         const strings: stringObject = { ...this.state.strings };
-        console.log('InputsContainer', classes);
         return (
             <>
                 <Card className={classes.card}>
@@ -126,7 +121,6 @@ class InputsContainer extends Component<IProps, IState> {
                     <CardContent classes={{ root: classes.cardContentRoot }}>
                         <List>
                             {configs[activeSection] && configs[activeSection].map((config: anyObject, index: number) => {
-                                console.log('types', config.type, typeof config.type);
                                 // ConfigType - Number
                                 // if (config.type == '1') { 
                                 if (index % 3 === 0) {
@@ -146,7 +140,6 @@ class InputsContainer extends Component<IProps, IState> {
                                 if (index % 2 === 0) {
                                     return (
                                         <ListItem >
-                                            {console.log('booleans[config.name]', config.name, booleans[config.name])}
                                             <BooleanInput
                                                 checked={booleans[config.name] ? booleans[config.name] : false}
                                                 label={config.name}

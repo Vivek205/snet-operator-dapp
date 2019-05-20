@@ -44,7 +44,7 @@ class App extends Component<{}, IState>{
         <div className="App" >
           <Router>
             <Switch>
-              <Route exact path='/' render={(props) => <AsyncHome {...props} web3Initialized={this.state.web3Initialized} />} />
+              <Route exact path='/' render={(props) => <AsyncHome {...props} web3Initialized={this.state.web3Initialized} network={this.network} />} />
               <Route component={AsyncPageNotFound} />
             </Switch>
           </Router>
