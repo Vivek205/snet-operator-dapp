@@ -9,28 +9,36 @@ import Fade from '@material-ui/core/Fade';
 interface IProps {
     show: boolean;
     classes: any;
+    label?:string;
 }
 
 const styles = (theme:Theme) => ({
+    label:{
+        
+    },
     root: {
         flexGrow: 1,
         zIndex: 99,
-        postion:'absolute',
+        postion:'fixed',
         margin: '45vh 45vw'
       }
 });
 
 const Loader: React.FC<IProps> = (props) => {
-    const { show, classes } = props;
+    const { show, classes,label } = props;
     return (
         <div>
             <Fade
                 in={show}
                 unmountOnExit
             >
-                <CircularProgress
+            <div className={classes.label}>
+                <h3>{label}</h3>
+            <CircularProgress
                 classes={{root:classes.root}}
                 />
+            </div>
+                
             </Fade>
         </div>
     );

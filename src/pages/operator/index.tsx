@@ -206,14 +206,14 @@ class Operator extends Component<IProps, IState> {
 
     render() {
         const { classes } = this.props;
-        const { activeSection, configs } = this.state;
+        const { activeSection, configs, showLoader } = this.state;
         return (
             <div>
                 {/* <div  style={{position:"fixed",width:'100vh'}} className={classes.appBar}>
                 <Header  />
                 </div> */}
-                {this.state.showLoader ?
-                    <Loader show />
+                {showLoader ?
+                    <Loader show={showLoader} label='Waiting for metamask sign in' />
                     :
                     <div className={classes.root}>
                         <CssBaseline />
