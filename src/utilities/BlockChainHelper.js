@@ -9,6 +9,7 @@ import MPEAbi from 'singularitynet-platform-contracts/abi/MultiPartyEscrow.json'
 import MPENetworks from 'singularitynet-platform-contracts/networks/MultiPartyEscrow.json';
 import { AGI } from './util';
 import { NETWORKS } from './networks'
+import { async, reject } from 'q';
 
 
 export default class BlockchainHelper {
@@ -28,7 +29,7 @@ export default class BlockchainHelper {
                 this.initializeState();
                 web3Initiatized = true;
             } catch (error) {
-                console.log("User denied access to Metamask",error);
+                console.log("User denied access to Metamask", error);
             }
         } else if (typeof this.web3 !== 'undefined') {
             this.initializeState();
@@ -36,6 +37,8 @@ export default class BlockchainHelper {
         }
         return web3Initiatized;
     }
+
+    
 
     initializeState() {
         // this.eth = new Eth(this.web3.currentProvider);
@@ -45,15 +48,15 @@ export default class BlockchainHelper {
     async waitForTransaction(hash) {
         let receipt;
         while (!receipt) {
-          receipt = await window.ethjs.getTransactionReceipt(hash);
+            receipt = await window.ethjs.getTransactionReceipt(hash);
         }
 
         if (receipt.status === "0x0") {
-          throw receipt
+            throw receipt
         }
-    
+
         return receipt;
-      }
+    }
 
     getAccount(callBack) {
         if (typeof this.eth === 'undefined') {
@@ -71,7 +74,7 @@ export default class BlockchainHelper {
                     callBack(accounts[0]);
                 }
             }
-        }).catch(err => { 
+        }).catch(err => {
             console.log(err)
             callBack(undefined);
         });
@@ -83,7 +86,7 @@ export default class BlockchainHelper {
         }
 
         var tokenInstance = this.getTokenInstance(chainId);
-        if(typeof  tokenInstance !== 'undefined') { 
+        if (typeof tokenInstance !== 'undefined') {
             tokenInstance.balanceOf(address, (err, balance) => {
                 callBack(AGI.inAGI(balance));
             });
@@ -111,11 +114,11 @@ export default class BlockchainHelper {
         if (typeof this.eth === 'undefined') {
             callBack(undefined);
         }
-        
+
         this.web3.eth.getBlockNumber((error, result) => {
-            if(error) {
+            if (error) {
                 console.log("Error reading blocknumber " + error)
-            } 
+            }
             else {
                 callBack(result);
             }
@@ -143,7 +146,7 @@ export default class BlockchainHelper {
     }
 
     getEtherScanAddressURL(chainId, address) {
-        return (chainId in NETWORKS ? NETWORKS[chainId]['etherscan'] +"/address/" + address : undefined);
+        return (chainId in NETWORKS ? NETWORKS[chainId]['etherscan'] + "/address/" + address : undefined);
     }
 
     getRegistryInstance(chainId) {
@@ -168,7 +171,7 @@ export default class BlockchainHelper {
     getTokenAddress(chainId) {
         return (chainId in AGITokenNetworks) ? AGITokenNetworks[chainId].address : undefined;
     }
-    
+
     getTokenInstance(chainId) {
         if (chainId in AGITokenNetworks) {
             let contract = this.web3.eth.contract(AGITokenAbi);
@@ -178,11 +181,11 @@ export default class BlockchainHelper {
     }
 
     getDefaultNetwork() {
-        for (var chain in NETWORKS){
-            if('default' in NETWORKS[chain] && NETWORKS[chain]['default'] === true) {
+        for (var chain in NETWORKS) {
+            if ('default' in NETWORKS[chain] && NETWORKS[chain]['default'] === true) {
                 return chain;
             }
         }
         return undefined;
-    }    
+    }
 }

@@ -6,102 +6,118 @@ package config;
 //goal is to provide a one stop place to remotely monitor and configure the Daemon in a secure way
 
 service ConfigurationService {
-   //Used when you just need to read the current configuration
-   rpc GetConfiguration (ReadRequest) returns (ConfigurationResponse) {
-   }
+    //Used when you just need to read the current configuration
+    rpc GetConfiguration (ReadRequest) returns (ConfigurationResponse) {
+    }
 
-   //Used when you want to update the existing configuration
-   rpc UpdateConfiguration (UpdateRequest) returns (ConfigurationResponse) {
-   }
+    //Used when you want to update the existing configuration
+    rpc UpdateConfiguration (UpdateRequest) returns (ConfigurationResponse) {
+    }
 
-   //This is used to instruct the Daemon to stop taking in any new requests,
-   //At this point , however any existing requests being processed will be honored.
-   // ("_Request_Stop", "block_number",authentication_address) should be sent in the signature
-   rpc StopProcessingRequests (CommandRequest) returns (Response) {
-   }
+    //This is used to instruct the Daemon to stop taking in any new requests,
+    //At this point , however any existing requests being processed will be honored.
+    // ("_Request_Stop", "block_number",authentication_address) should be sent in the signature
+    rpc StopProcessingRequests (CommandRequest) returns (Response) {
+    }
 
-   //Restores the normal behavior to start processing new requests again
-   // ("_Request_Start", "block_number",authentication_address) should be sent in the signature
-   rpc StartProcessingRequests (CommandRequest) returns (Response) {
-   }
+    //Restores the normal behavior to start processing new requests again
+    // ("_Request_Start", "block_number",authentication_address) should be sent in the signature
+    rpc StartProcessingRequests (CommandRequest) returns (Response) {
+    }
 }
 
 //Used when you just need to read the current configuration
 message ReadRequest {
-   //Signature will compromise of the below
-   // ("_Request_Read", "block_number",authentication_address)
-   bytes signature = 1;
+    //Signature will compromise of the below
+    // ("_Request_Read", "block_number",authentication_address)
+    bytes signature = 1;
+
+
+    //current block number (signature will be valid only for short time around this block number)
+    uint64 current_block = 2;
 
 }
 
 message NameValue {
-   string name =1 ;
-   string value =2 ;
+    string name =1 ;
+    string value =2 ;
 }
 
 
 //Used when you want to update the existing configuration
 message UpdateRequest {
-   //Signature will compromise of the below
-   // ("_Request_Update", "block_number",authentication_address)
-   bytes signature = 1;
-   //Holds the updated configuration in the form of JSON,only the fields to be updated should be sent
-   repeated NameValue updated_configuration = 2;
+    //Signature will compromise of the below
+    // ("_Request_Update", "block_number",authentication_address)
+    bytes signature = 1;
+    //Holds the updated configuration in the form of JSON,only the fields to be updated should be sent
+    repeated NameValue updated_configuration = 2;
+
+    //current block number (signature will be valid only for short time around this block number)
+    uint64 current_block = 3;
 
 }
 
 message CommandRequest {
-   //Signature will compromise one of the below
-   // ("_Request_Start", "block_number",authentication_address) for the StartProcessingRequests
-   // ("_Request_Stop", "block_number",authentication_address) for the StopProcessingRequests
-   bytes signature = 1;
+    //Signature will compromise one of the below
+    // ("_Request_Start", "block_number",authentication_address) for the StartProcessingRequests
+    // ("_Request_Stop", "block_number",authentication_address) for the StopProcessingRequests
+    bytes signature = 1;
+    StartStop command = 2;
+
+
+    //current block number (signature will be valid only for short time around this block number)
+    uint64 current_block = 3;
 }
 
 
 message Response {
-   //Signature will compromise of the below
-   //(block_number,authentication_address)
-   bytes signature = 1;
+    //Signature will compromise of the below
+    //(block_number,authentication_address)
+    bytes signature = 1;
 }
 
+enum StartStop  {
+    START =0;
+    STOP=1;
+}
 
 message ConfigurationParameter {
 
-   string name = 1;
+    string name = 1;
 
-   string value = 2;
+    string value = 2;
 
-   bool mandatory = 3;
+    bool mandatory = 3;
 
-   string description = 4;
+    string description = 4;
 
-   enum Type {
-       STRING = 0;
-       INTEGER = 1;
-       URL = 3;
-       BOOLEAN =4;
-   }
-   Type type = 5;
+    enum Type {
+        STRING = 0;
+        INTEGER = 1;
+        URL = 3;
+        BOOLEAN =4;
+    }
+    Type type = 5;
 
-   bool editable = 6;
+    bool editable = 6;
 
-   enum UpdateAction {
-       RESTART = 0;
-       NO_IMPACT = 1;
-   }
-   UpdateAction restart_daemon = 7;
+    enum UpdateAction {
+        RESTART = 0;
+        NO_IMPACT = 1;
+    }
+    UpdateAction restart_daemon = 7;
 
-   string section = 8;
+    string section = 8;
 }
 
 
 
 //Response sent back by Daemon on Read or Successful update
 message ConfigurationResponse {
-   //Signature will compromise of the below
-   //(block_number,authentication_address,ConfigurationParameter)
-   bytes signature = 1;
+    //Signature will compromise of the below
+    //(block_number,authentication_address,ConfigurationParameter)
+    bytes signature = 1;
 
-   //Holds the current configuration of Daemon and is sent back in the response.
-   repeated ConfigurationParameter configuration = 2;
+    //Holds the current configuration of Daemon and is sent back in the response.
+    repeated ConfigurationParameter configuration = 2;
 }

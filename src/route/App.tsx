@@ -1,5 +1,3 @@
-//Disabling eslint to allow web3 injection by metamask
-/* eslint-disable */
 import React, { Component } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";

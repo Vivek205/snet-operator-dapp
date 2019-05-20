@@ -34,10 +34,12 @@ interface IProps {
     label: string;
     description: string;
     handleChange(e: React.ChangeEvent<HTMLInputElement>, label: string): void;
+    disabled?: boolean;
 }
 
 const StringInput: React.FC<IProps> = props => {
-    const { classes, label, handleChange, value, description } = props;
+    const { classes, label, handleChange, value, description, disabled } = props;
+    console.log('string input', label, '==', value);
     return (
         <div>
             <FormControlLabel
@@ -45,7 +47,9 @@ const StringInput: React.FC<IProps> = props => {
                 control={
                     <Input
                         className={classes.input}
+                        // defaultValue={value}
                         value={value}
+                        disabled={disabled}
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => handleChange(event, label)} />
                 }
                 label={<Fragment>
@@ -66,7 +70,8 @@ const StringInput: React.FC<IProps> = props => {
 };
 
 StringInput.defaultProps = {
-    type: 'string'
+    type: 'string',
+    disabled: false
 }
 
 export default withStyles(styles)(StringInput);

@@ -20,7 +20,7 @@ const styles = (theme:Theme) => ({
         flexGrow: 1,
         zIndex: 99,
         postion:'fixed',
-        margin: '45vh 45vw'
+        margin: '5vh 45vw'
       }
 });
 

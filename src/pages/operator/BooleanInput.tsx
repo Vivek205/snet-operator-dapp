@@ -30,10 +30,12 @@ interface IProps {
     label: string;
     description: string;
     handleChange(e: React.ChangeEvent<HTMLInputElement>, label: string): void;
+    disabled?: boolean;
 }
 
 const BooleanInput: React.FC<IProps> = (props) => {
-    const { checked, label, handleChange, classes, description } = props;
+    const { checked, label, handleChange, classes, description, disabled } = props;
+    console.log('boolean input', label, '==', checked);
     return (
         <FormControlLabel
             labelPlacement="start"
@@ -42,6 +44,7 @@ const BooleanInput: React.FC<IProps> = (props) => {
                     checked={checked}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, label)}
                     value="checkedA"
+                    disabled={disabled}
                 />
             }
             label={<Fragment>
@@ -59,5 +62,9 @@ const BooleanInput: React.FC<IProps> = (props) => {
         />
     );
 };
+
+BooleanInput.defaultProps = {
+    disabled: false
+}
 
 export default withStyles(styles)(BooleanInput);

@@ -121,44 +121,53 @@ class InputsContainer extends Component<IProps, IState> {
                     <CardContent classes={{ root: classes.cardContentRoot }}>
                         <List>
                             {configs[activeSection] && configs[activeSection].map((config: anyObject, index: number) => {
+                                // console.log( config.name, config.value);
+
+                                if (strings[config.name]) {
+                                    console.log('strings[config.name]')
+                                } else {
+                                    console.log('config.type', config.type);
+                                }
                                 // ConfigType - Number
-                                // if (config.type == '1') { 
-                                if (index % 3 === 0) {
+                                if (config.type === 1) {
                                     return (
                                         <ListItem >
                                             <StringInput
                                                 type='number'
                                                 key={config.name}
-                                                value={strings[config.name] ? strings[config.name] : ''}
+                                                value={config.value}
                                                 description={config.description}
-                                                label={config.name} handleChange={this.handleStringChange} />
+                                                label={config.name} handleChange={this.handleStringChange} 
+                                                disabled={!config.editable} />
                                         </ListItem>
                                     )
                                 }
                                 // ConfigType - Boolean
-                                // if (config.type == '4') {
-                                if (index % 2 === 0) {
+                                if (config.type === 4) {
                                     return (
                                         <ListItem >
                                             <BooleanInput
-                                                checked={booleans[config.name] ? booleans[config.name] : false}
+                                                checked={config.value}
                                                 label={config.name}
                                                 description={config.description}
-                                                handleChange={this.handleBoolanChange} />
+                                                handleChange={this.handleBoolanChange}
+                                                disabled={!config.editable}  />
                                         </ListItem>
                                     );
                                 }
                                 // ConfigType - String or URL
-                                // if (config.type == '0' || config.type == '3') {
-                                return (
-                                    <ListItem >
-                                        <StringInput
-                                            key={config.name}
-                                            value={strings[config.name] ? strings[config.name] : ''}
-                                            description={config.description}
-                                            label={config.name} handleChange={this.handleStringChange} />
-                                    </ListItem>
-                                );
+                                if (config.type === 0 || config.type == 3) {
+                                    return (
+                                        <ListItem >
+                                            <StringInput
+                                                key={config.name}
+                                                value={typeof strings[config.name] === 'undefined' ? config.value : strings[config.name]}
+                                                description={config.description}
+                                                label={config.name} handleChange={this.handleStringChange} 
+                                                disabled={!config.editable} />
+                                        </ListItem>
+                                    );
+                                }
                             })}
                         </List>
                     </CardContent>
@@ -171,12 +180,12 @@ class InputsContainer extends Component<IProps, IState> {
                     <Toolbar className={classes.toolbar}>
                         <Typography variant="h4" color="inherit" className={classes.actionButtons}>
                             <Button variant="contained" color="secondary" className={classes.button}
-                                onClick={this.handleCancel}
+                                // onClick={this.handleCancel}
                                 disabled={this.shouldActionsDisabled()}>
                                 Cancel
                         </Button>
                             <Button variant="contained" color="primary" className={classes.button}
-                                onClick={this.handleSubmit}
+                                // onClick={this.handleSubmit}
                                 disabled={this.shouldActionsDisabled()}>
                                 Submit
                         </Button>

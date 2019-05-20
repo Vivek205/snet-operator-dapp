@@ -1,3 +1,4 @@
 #Ignore App.tsx linting to avoid web3 err
 /root/src/route/App.tsx
-/root/src/pages/operator/index.tsx
+# /root/src/pages/operator/index.tsx
+/root/src/protos/config/config_pb.js

@@ -9,6 +9,9 @@ export class ReadRequest extends jspb.Message {
   getSignature_asB64(): string;
   setSignature(value: Uint8Array | string): void;
 
+  getCurrentBlock(): number;
+  setCurrentBlock(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ReadRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ReadRequest): ReadRequest.AsObject;
@@ -22,6 +25,7 @@ export class ReadRequest extends jspb.Message {
 export namespace ReadRequest {
   export type AsObject = {
     signature: Uint8Array | string,
+    currentBlock: number,
   }
 }
 
@@ -60,6 +64,9 @@ export class UpdateRequest extends jspb.Message {
   setUpdatedConfigurationList(value: Array<NameValue>): void;
   addUpdatedConfiguration(value?: NameValue, index?: number): NameValue;
 
+  getCurrentBlock(): number;
+  setCurrentBlock(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UpdateRequest.AsObject;
   static toObject(includeInstance: boolean, msg: UpdateRequest): UpdateRequest.AsObject;
@@ -74,6 +81,7 @@ export namespace UpdateRequest {
   export type AsObject = {
     signature: Uint8Array | string,
     updatedConfigurationList: Array<NameValue.AsObject>,
+    currentBlock: number,
   }
 }
 
@@ -82,6 +90,12 @@ export class CommandRequest extends jspb.Message {
   getSignature_asU8(): Uint8Array;
   getSignature_asB64(): string;
   setSignature(value: Uint8Array | string): void;
+
+  getCommand(): StartStop;
+  setCommand(value: StartStop): void;
+
+  getCurrentBlock(): number;
+  setCurrentBlock(value: number): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): CommandRequest.AsObject;
@@ -96,6 +110,8 @@ export class CommandRequest extends jspb.Message {
 export namespace CommandRequest {
   export type AsObject = {
     signature: Uint8Array | string,
+    command: StartStop,
+    currentBlock: number,
   }
 }
 
@@ -207,5 +223,10 @@ export namespace ConfigurationResponse {
     signature: Uint8Array | string,
     configurationList: Array<ConfigurationParameter.AsObject>,
   }
+}
+
+export enum StartStop {
+  START = 0,
+  STOP = 1,
 }
 

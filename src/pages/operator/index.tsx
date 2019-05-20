@@ -9,6 +9,7 @@ import { grpc } from "@improbable-eng/grpc-web";
 import { Code } from '../../typeScript/grpc';
 import { anyObject, configs, stringObject } from '../../typeScript/interfaces';
 import Loader from '../../reusableComponents/Loader';
+import GetDaemonEndpoint from './GetDaemonEndpoint';
 
 // Generated STUB Imports
 import { ConfigurationService } from '../../protos/config/config_pb_service';
@@ -20,6 +21,7 @@ import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import ErrorComponent from '../../reusableComponents/Error';
 
 interface IProps {
     classes: anyObject;
@@ -31,6 +33,8 @@ interface IState {
     sections: string[];
     activeSection: string;
     showLoader: boolean;
+    daemonEndpoint: string;
+    showError: boolean;
 }
 
 export interface Menu {
@@ -72,11 +76,12 @@ class Operator extends Component<IProps, IState> {
         activeSection: 'general',
         configs: {},
         sections: [],
-        showLoader: true
+        showLoader: true,
+        daemonEndpoint: '',
+        showError: false
     }
 
     componentDidMount = () => {
-        this.fetchConfigDetails();
     }
 
     handleSectionChange = (activeSection: string) => {
@@ -107,17 +112,21 @@ class Operator extends Component<IProps, IState> {
         })
     }
 
-    fetchConfigDetails = async (signature = '') => {
+    handleDaemonEndpoint = (daemonEndpoint: string) => {
+        this.setState({ daemonEndpoint });
+        this.fetchConfigDetails();
+    }
+
+    fetchConfigDetails = async () => {
         let sections: string[] = [];
         let configs: any = {};
         const readRequest: ReadRequest = new ReadRequest();
-        let count: number = 0;
         let userAddress: string = '';
         let currentBlockNumber: number = 0;
         console.log('calling');
         userAddress = await this.getAccount();
-        console.log('userAddress', userAddress);
         currentBlockNumber = await this.getCurrentBlockNumber();
+        readRequest.setCurrentBlock(currentBlockNumber);
         console.log('blockNumber', currentBlockNumber);
 
         let msg = this.composeSHA3Message(
@@ -128,10 +137,14 @@ class Operator extends Component<IProps, IState> {
         this.props.network.eth.personal_sign(msg, userAddress)
             .then((signed: string) => {
                 console.log('metamask signature', signed);
+                var stripped = signed.substring(2, signed.length)
+                var byteSig = Buffer.from(stripped, 'hex');
+                let buff = new Buffer(byteSig);
+                readRequest.setSignature(buff);
                 try {
                     grpc.invoke(ConfigurationService.GetConfiguration, {
                         request: readRequest,
-                        host: 'http://34.197.167.102:8088',
+                        host: this.state.daemonEndpoint,
                         onMessage: (message: ConfigurationResponse) => {
                             message.getConfigurationList().map((value: ConfigurationParameter, index: number) => {
                                 let config: any = {
@@ -148,13 +161,14 @@ class Operator extends Component<IProps, IState> {
                                     configs[config.section] = [];
                                 }
                                 configs[config.section].push(config);
-                                if (config.section === 'general') { count++; }
                             });
+                            console.log('configs fetched', configs);
                             this.setState({ configs, sections, activeSection: sections[0] });
 
                         },
                         onEnd: (code: Code, msg: string | undefined, trailers: grpc.Metadata) => {
                             console.log('end', '--code', code, '--msg', msg, '--trailers', trailers);
+                            if (code === 2) { this.setState({ showError: true }) };
                             this.setState({ showLoader: false });
                         }
                     })
@@ -164,19 +178,18 @@ class Operator extends Component<IProps, IState> {
                 }
             })
             .catch((err: string) => {
-                console.log(err);
-                this.setState({ showLoader: false });
+                console.log('personal sign error', err);
+                this.setState({ showLoader: false, showError: true });
             })
     }
 
     //Have to be typed properly
     updateConfigDetails = (submitArr: any[]) => {
         const updateRequest: any = submitArr;
-        let count: number = 0;
         try {
             grpc.invoke(ConfigurationService.UpdateConfiguration, {
                 request: updateRequest,
-                host: 'http://34.197.167.102:8088',
+                host: this.state.daemonEndpoint,
                 onMessage: (message: ConfigurationResponse) => {
                     console.log('length of response', message);
 
@@ -187,6 +200,7 @@ class Operator extends Component<IProps, IState> {
                 }
             })
         } catch (err) {
+            this.setState({ showError: true });
             console.log('Err: UpdateConfigDetails', err);
         }
     }
@@ -204,36 +218,43 @@ class Operator extends Component<IProps, IState> {
         this.updateConfigDetails(submitArr);
     }
 
+    toggleError = () => {
+        if (this.state.daemonEndpoint !== '') {
+            this.setState({ showLoader: true, showError: false });
+            this.fetchConfigDetails();
+        }
+    }
+
     render() {
         const { classes } = this.props;
-        const { activeSection, configs, showLoader } = this.state;
+        const { activeSection, configs, showLoader, daemonEndpoint, showError } = this.state;
+        console.log('showError', showError);
+        if (daemonEndpoint === '') {
+            return (<GetDaemonEndpoint handleDaemonEndpoint={this.handleDaemonEndpoint} />);
+        }
+        if (showLoader) {
+            return (<Loader show={showLoader} label='Waiting for metamask sign in' />);
+        }
         return (
             <div>
-                {/* <div  style={{position:"fixed",width:'100vh'}} className={classes.appBar}>
-                <Header  />
-                </div> */}
-                {showLoader ?
-                    <Loader show={showLoader} label='Waiting for metamask sign in' />
-                    :
-                    <div className={classes.root}>
-                        <CssBaseline />
-                        <AppBar position="fixed" className={classes.appBar}>
-                            <Toolbar>
-                                <Typography variant="h4" color="inherit" className={classes.header}>
-                                    SingularityNet Operator UI
+                <ErrorComponent show={this.state.showError} handleClose={this.toggleError} />
+                <div className={classes.root}>
+                    <CssBaseline />
+                    <AppBar position="fixed" className={classes.appBar}>
+                        <Toolbar>
+                            <Typography variant="h4" color="inherit" className={classes.header}>
+                                SingularityNet Operator UI
                             </Typography>
-                            </Toolbar>
-                        </AppBar>
-                        <SectionMenu classes={classes} sections={this.state.sections} handleSectionChange={this.handleSectionChange} />
-                        <main className={classes.content}>
-                            <div className={classes.toolbar} />
-                            <Typography paragraph variant='display1'>
-                                <InputsContainer classes={classes} activeSection={activeSection} configs={configs} handleSubmit={this.handleSubmit} />
-                            </Typography>
-                        </main>
-
-                    </div>}
-
+                        </Toolbar>
+                    </AppBar>
+                    <SectionMenu classes={classes} sections={this.state.sections} handleSectionChange={this.handleSectionChange} />
+                    <main className={classes.content}>
+                        <div className={classes.toolbar} />
+                        <Typography paragraph variant='display1'>
+                            <InputsContainer classes={classes} activeSection={activeSection} configs={configs} handleSubmit={this.handleSubmit} />
+                        </Typography>
+                    </main>
+                </div>
             </div>
         );
     }
