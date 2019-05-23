@@ -8,7 +8,6 @@ import BlockchainHelper from '../utilities/BlockChainHelper';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import { theme } from '../assets/css/MaterialUITheme';
 
-
 const AsyncHome = asyncComponent(() => import('../pages/home/Home'));
 const AsyncPageNotFound = asyncComponent(() => import('../pages/PageNotFound'));
 

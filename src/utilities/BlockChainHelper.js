@@ -38,7 +38,7 @@ export default class BlockchainHelper {
         return web3Initiatized;
     }
 
-    
+
 
     initializeState() {
         // this.eth = new Eth(this.web3.currentProvider);
@@ -58,26 +58,29 @@ export default class BlockchainHelper {
         return receipt;
     }
 
-    getAccount(callBack) {
-        if (typeof this.eth === 'undefined') {
-            callBack(undefined);
-        }
-
-        this.eth.accounts().then(accounts => {
-            if (accounts.length === 0) {
-                this.defaultAccount = undefined
-                callBack(undefined);
-            } else {
-                if (typeof accounts[0] !== 'undefined' && this.defaultAccount !== accounts[0]) {
-                    this.defaultAccount = accounts[0];
-                    this.web3.eth.defaultAccount = accounts[0]; //TODO - NETWORK CHANGE
-                    callBack(accounts[0]);
-                }
+    async getAccount() {
+        return new Promise((resolve) => {
+            if (typeof this.eth === 'undefined') {
+                resolve(undefined);
             }
-        }).catch(err => {
-            console.log(err)
-            callBack(undefined);
-        });
+            this.eth.accounts().then(accounts => {
+                if (accounts.length === 0) {
+                    this.defaultAccount = undefined;
+                    resolve(undefined);
+                } else {
+                    if (typeof accounts[0] !== 'undefined' && this.defaultAccount !== accounts[0]) {
+                        this.defaultAccount = accounts[0];
+                        
+                    }
+                    this.web3.eth.defaultAccount = this.defaultAccount; //TODO - NETWORK CHANGE
+                    resolve(this.defaultAccount);              
+                
+                }
+            }).catch(err => {
+                console.log('get Account err', err)
+                resolve(undefined);
+            })
+        })
     }
 
     getAGIBalance(chainId, address, callBack) {
@@ -110,19 +113,22 @@ export default class BlockchainHelper {
         return callBack(undefined);
     }
 
-    getCurrentBlockNumber(callBack) {
-        if (typeof this.eth === 'undefined') {
-            callBack(undefined);
-        }
+    async getCurrentBlockNumber() {
+        return new Promise(resolve => {
+            if (typeof this.eth === 'undefined') {
+                resolve(undefined);
+            }
 
-        this.web3.eth.getBlockNumber((error, result) => {
-            if (error) {
-                console.log("Error reading blocknumber " + error)
-            }
-            else {
-                callBack(result);
-            }
-        });
+            this.web3.eth.getBlockNumber((error, result) => {
+                if (error) {
+                    console.log("Error reading blocknumber " + error)
+                }
+                else {
+                    resolve(result);
+                }
+            });
+        })
+
     }
 
     getChainID(callBack) {
@@ -187,5 +193,19 @@ export default class BlockchainHelper {
             }
         }
         return undefined;
+    }
+
+    composeSHA3Message = (types, values) => {
+        var ethereumjsabi = require('ethereumjs-abi');
+        var sha3Message = ethereumjsabi.soliditySHA3(types, values);
+        var msg = "0x" + sha3Message.toString("hex");
+        return msg;
+    }
+
+    buffSignature = (signed) => {
+        let stripped = signed.substring(2, signed.length)
+        let byteSig = Buffer.from(stripped, 'hex');
+        let buff = new Buffer(byteSig);
+        return buff;
     }
 }

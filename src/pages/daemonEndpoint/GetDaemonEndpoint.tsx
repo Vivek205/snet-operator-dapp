@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import StringInput from './StringInput';
+import StringInput from '../operator/StringInput';
 
 // MaterialUI Imports
 import Card from '@material-ui/core/Card';

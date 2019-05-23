@@ -5,9 +5,20 @@ export const ICONS: ICONS = {
     'certificate': 'fas fa-suitcase',
     'blockchain': 'fab fa-bitcoin',
     'default': 'fab fa-intercom',
-    'tooltipInfo': 'fas fa-info-circle'
+    'tooltipInfo': 'fas fa-info-circle',
+    'start':'fas fa-play-circle',
+    'stop':'fas fa-stop-circle'
 }
 
 interface ICONS {
-    [key: string]: string;
+    'ratelimit': string;
+    'general': string;
+    'logging': string;
+    'certificate': string;
+    'blockchain': string;
+    'default': string;
+    'tooltipInfo': string;
+    'start':string;
+    'stop':string;
+    [key:string]:string;
 }

@@ -9,7 +9,8 @@ import { grpc } from "@improbable-eng/grpc-web";
 import { Code } from '../../typeScript/grpc';
 import { anyObject, configs, stringObject } from '../../typeScript/interfaces';
 import Loader from '../../reusableComponents/Loader';
-import GetDaemonEndpoint from './GetDaemonEndpoint';
+import GetDaemonEndpoint from '../daemonEndpoint/GetDaemonEndpoint';
+import StartStopDaemon from './StartStopDaemon';
 
 // Generated STUB Imports
 import { ConfigurationService } from '../../protos/config/config_pb_service';
@@ -88,59 +89,32 @@ class Operator extends Component<IProps, IState> {
         this.setState({ activeSection });
     }
 
-    composeSHA3Message = (types: any[], values: any[]) => {
-        var ethereumjsabi = require('ethereumjs-abi');
-        var sha3Message = ethereumjsabi.soliditySHA3(types, values);
-        var msg = "0x" + sha3Message.toString("hex");
-        return msg;
-    }
-
-    getAccount = (): Promise<string> => {
-        return new Promise((resolve: any) => {
-            this.props.network.getAccount((address: string) => {
-                console.log('resolved', typeof address);
-                resolve(address);
-            });
-        })
-    }
-
-    getCurrentBlockNumber = (): Promise<number> => {
-        return new Promise((resolve: any) => {
-            this.props.network.getCurrentBlockNumber((blockNumber: number) => {
-                resolve(blockNumber);
-            })
-        })
-    }
-
     handleDaemonEndpoint = (daemonEndpoint: string) => {
         this.setState({ daemonEndpoint });
         this.fetchConfigDetails();
     }
 
     fetchConfigDetails = async () => {
+        const { network } = this.props;
         let sections: string[] = [];
         let configs: any = {};
         const readRequest: ReadRequest = new ReadRequest();
         let userAddress: string = '';
         let currentBlockNumber: number = 0;
-        console.log('calling');
-        userAddress = await this.getAccount();
-        currentBlockNumber = await this.getCurrentBlockNumber();
-        readRequest.setCurrentBlock(currentBlockNumber);
-        console.log('blockNumber', currentBlockNumber);
 
-        let msg = this.composeSHA3Message(
+        userAddress = await network.getAccount();
+        currentBlockNumber = await network.getCurrentBlockNumber();
+        readRequest.setCurrentBlock(currentBlockNumber);
+
+        let msg = network.composeSHA3Message(
             ['string', 'uint256', 'address'],
             ['_Request_Read', currentBlockNumber, userAddress]);
-        console.log('msg', msg);
-        console.log('eth', this.props.network.eth.personal_sign);
-        this.props.network.eth.personal_sign(msg, userAddress)
+
+        network.eth.personal_sign(msg, userAddress)
             .then((signed: string) => {
                 console.log('metamask signature', signed);
-                var stripped = signed.substring(2, signed.length)
-                var byteSig = Buffer.from(stripped, 'hex');
-                let buff = new Buffer(byteSig);
-                readRequest.setSignature(buff);
+                let signature = network.buffSignature(signed);
+                readRequest.setSignature(signature);
                 try {
                     grpc.invoke(ConfigurationService.GetConfiguration, {
                         request: readRequest,
@@ -226,7 +200,7 @@ class Operator extends Component<IProps, IState> {
     }
 
     render() {
-        const { classes } = this.props;
+        const { classes, network } = this.props;
         const { activeSection, configs, showLoader, daemonEndpoint, showError } = this.state;
         console.log('showError', showError);
         if (daemonEndpoint === '') {
@@ -237,7 +211,7 @@ class Operator extends Component<IProps, IState> {
         }
         return (
             <div>
-                <ErrorComponent show={this.state.showError} handleClose={this.toggleError} />
+                {/* <ErrorComponent show={this.state.showError} handleClose={this.toggleError} /> */}
                 <div className={classes.root}>
                     <CssBaseline />
                     <AppBar position="fixed" className={classes.appBar}>
@@ -245,6 +219,7 @@ class Operator extends Component<IProps, IState> {
                             <Typography variant="h4" color="inherit" className={classes.header}>
                                 SingularityNet Operator UI
                             </Typography>
+                            <StartStopDaemon network={network} daemonEndpoint={daemonEndpoint} />
                         </Toolbar>
                     </AppBar>
                     <SectionMenu classes={classes} sections={this.state.sections} handleSectionChange={this.handleSectionChange} />
